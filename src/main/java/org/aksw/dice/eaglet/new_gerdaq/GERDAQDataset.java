@@ -49,7 +49,6 @@ public class GERDAQDataset extends AbstractDataset implements InitializableDatas
     private static final Logger LOGGER = LoggerFactory.getLogger(GERDAQDataset.class);
 
     private static final String WIKIPEDIA_URI = "http://en.wikipedia.org/wiki/";
-    private static final String DBPEDIA_URI = "http://dbpedia.org/resource/";
     private static final String ANNOTATION_TAG = "annotation";
     private static final String DOCUMENT_TAG = "instance";
 
@@ -128,7 +127,6 @@ public class GERDAQDataset extends AbstractDataset implements InitializableDatas
                 private int markingStart;
                 private String markingTitle;
                 private List<Marking> markings;
-                private String markingUrl;
 
                 @Override
                 public void startDocument() throws SAXException {
@@ -141,18 +139,12 @@ public class GERDAQDataset extends AbstractDataset implements InitializableDatas
 
                     if (qName.equals(ANNOTATION_TAG)) {
                         markingTitle = atts.getValue("rank_0_title");
-                        markingUrl = atts.getValue("url");
                         if (markingTitle != null) {
                             markingStart = text.length();
                         } else {
                             LOGGER.error("Found a marking without the necessary \"rank_0_title\" or \"url\" attribute.");
                         }
                         markingTitle = markingTitle.replace(' ', '_');
-
-                        if (markingUrl == null)
-                            markingUrl = "";
-
-                        markingUrl = markingUrl.replace(' ', '_');
                     } else if (qName.equals(DOCUMENT_TAG)) {
                         this.markings = new ArrayList<>();
                     }
@@ -170,7 +162,7 @@ public class GERDAQDataset extends AbstractDataset implements InitializableDatas
                         text.delete(0, text.length());
                     } else if (qName.equals(ANNOTATION_TAG) && (markingTitle != null)) {
                         markings.add(new NamedEntity(markingStart, text.length() - markingStart, new HashSet<String>(
-                                Arrays.asList(WIKIPEDIA_URI + markingUrl))));
+                                Arrays.asList(WIKIPEDIA_URI + markingTitle))));
                     }
                 }
             });
